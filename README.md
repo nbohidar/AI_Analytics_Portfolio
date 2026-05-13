@@ -85,7 +85,7 @@ pip install crewai openai python-dotenv
 
 ```bash
 cp .env.example .env
-# Add your OPENAI_API_KEY or other LLM provider key
+
 ```
 
 ---

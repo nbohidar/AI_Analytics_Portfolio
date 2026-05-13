@@ -1,0 +1,193 @@
+{
+  "tables": [
+    {
+      "table_name": "bronze_drug_structures_pubchem",
+      "description": "Raw drug structural data including unique drug identifiers, canonical chemical representations, and fingerprint-ready fields for downstream structural similarity scoring using Tanimoto coefficient.",
+      "source_database": "PubChem",
+      "fields": [
+        {
+          "field_name": "pubchem_cid",
+          "data_type": "integer",
+          "description": "PubChem Compound Identifier (CID) uniquely identifying each chemical compound."
+        },
+        {
+          "field_name": "canonical_smiles",
+          "data_type": "string",
+          "description": "Canonical SMILES string representing the standardized chemical structure."
+        },
+        {
+          "field_name": "inchi",
+          "data_type": "string",
+          "description": "IUPAC International Chemical Identifier (InChI) providing a unique textual representation of the chemical structure."
+        },
+        {
+          "field_name": "inchi_key",
+          "data_type": "string",
+          "description": "Hashed, fixed-length InChIKey derived from the InChI, enabling fast structure searching and indexing."
+        },
+        {
+          "field_name": "fingerprint_type",
+          "data_type": "string",
+          "description": "Type of molecular fingerprint encoding (e.g., ECFP4, MACCS) used for similarity calculations."
+        },
+        {
+          "field_name": "fingerprint_raw",
+          "data_type": "string",
+          "description": "Raw bitstring or hex-encoded fingerprint generated from the canonical SMILES, suitable for Tanimoto similarity scoring."
+        },
+        {
+          "field_name": "source",
+          "data_type": "string",
+          "description": "Source database of the structural data to ensure provenance and traceability (e.g., PubChem)."
+        }
+      ],
+      "rationale": "To accurately compute structural similarity using Tanimoto coefficient, the bronze layer must contain canonical, unambiguous chemical identifiers such as PubChem CID, canonical SMILES, InChI, and InChIKey to uniquely represent chemical structures. Fingerprint-ready fields are essential to perform reproducible and consistent molecular similarity scoring. PubChem is selected due to its comprehensive, open-access datasets and standardized chemical structure representations with widely adopted identifiers and well-documented fingerprints."
+    },
+    {
+      "table_name": "bronze_drug_target",
+      "description": "Raw drug-target association data including standardized drug and target identifiers, evidence scores, and source provenance to enable drug-target overlap and network similarity computations.",
+      "source_database": "Open Targets",
+      "fields": [
+        {
+          "field_name": "drug_id",
+          "data_type": "string",
+          "description": "Unique drug identifier, preferably Open Targets drug ID or interpolated ChEMBL ID for cross-reference."
+        },
+        {
+          "field_name": "target_ensembl_id",
+          "data_type": "string",
+          "description": "Ensembl gene identifier representing the target protein, allowing consistent target mapping across datasets."
+        },
+        {
+          "field_name": "target_gene_symbol",
+          "data_type": "string",
+          "description": "HGNC gene symbol corresponding to the target Ensembl ID, for human-readable interpretation."
+        },
+        {
+          "field_name": "association_score",
+          "data_type": "float",
+          "description": "Aggregated confidence score of the drug-target association from Open Targets, indicating evidence strength."
+        },
+        {
+          "field_name": "evidence_type",
+          "data_type": "string",
+          "description": "Type of evidence supporting the drug-target association, e.g., experimental, inferred, literature."
+        },
+        {
+          "field_name": "source",
+          "data_type": "string",
+          "description": "Database source of the drug-target data, e.g., Open Targets, ensuring provenance and traceability."
+        }
+      ],
+      "rationale": "This bronze-layer table captures minimally required drug-target relationship data optimized for computing drug similarity via target overlap (Jaccard index). Open Targets provides robust, publicly accessible drug-target associations with standardized identifiers (Ensembl, HGNC, ChEMBL/Open Targets drug IDs) and evidence scoring suitable for filtering. Inclusion of source and evidence type guarantees provenance and granularity critical for reliable network similarity scoring and network construction downstream. This data enables uniform drug-target mapping essential for graph-based similarity metrics in DSS."
+    },
+    {
+      "table_name": "bronze_drug_transcriptomic_signatures",
+      "description": "Raw, publicly accessible transcriptomic data capturing drug perturbation and disease gene expression signatures with standardized gene identifiers and provenance, providing minimal inputs for downstream transcriptomic similarity scoring.",
+      "source_database": "LINCS L1000 (via GEO / public datasets)",
+      "fields": [
+        {
+          "field_name": "drug_id",
+          "data_type": "string",
+          "description": "Standardized drug identifier (e.g., PubChem CID, ChEMBL ID) linking transcriptomic perturbation signatures to drugs."
+        },
+        {
+          "field_name": "disease_id",
+          "data_type": "string",
+          "description": "Standardized disease identifier (e.g., DOID, MeSH ID) for disease gene expression signatures, if applicable."
+        },
+        {
+          "field_name": "gene_id",
+          "data_type": "string",
+          "description": "Standardized gene identifier (Entrez Gene ID or Ensembl Gene ID) to represent genes in transcriptomic signatures."
+        },
+        {
+          "field_name": "log_fold_change",
+          "data_type": "float",
+          "description": "Normalized gene expression log2 fold change upon drug perturbation or in disease state."
+        },
+        {
+          "field_name": "p_value",
+          "data_type": "float",
+          "description": "Statistical significance (p-value) associated with the gene expression change."
+        },
+        {
+          "field_name": "signature_type",
+          "data_type": "string",
+          "description": "Type of transcriptomic signature: 'drug_perturbation' or 'disease_signature'."
+        },
+        {
+          "field_name": "source",
+          "data_type": "string",
+          "description": "Source database or repository of the transcriptomic data, e.g., LINCS L1000, GEO."
+        }
+      ],
+      "rationale": "Accurate transcriptomic similarity scoring requires standardized gene identifiers and quantitative expression changes for both drug perturbation and disease signatures. Including drug and disease identifiers facilitates mapping and integrative analysis. Data from widely used public repositories like LINCS L1000 and GEO ensures open availability, reproducibility, and traceability. This bronze-layer schema provides the minimal, essential inputs for downstream transcriptomic similarity computation within the Drug Similarity Score framework."
+    },
+    {
+      "table_name": "bronze_drug_integration",
+      "description": "Primary integration table linking all drug similarity feature tables via shared standardized drug identifiers to enable unified mapping and scoring across multiple similarity data types.",
+      "fields": [
+        {
+          "field_name": "drug_inchikey",
+          "data_type": "string",
+          "description": "Primary chemical identifier - standardized, fixed-length InChIKey allowing unambiguous linkage across datasets."
+        },
+        {
+          "field_name": "pubchem_cid",
+          "data_type": "integer",
+          "description": "PubChem Compound Identifier linking to bronze_drug_structures_pubchem."
+        },
+        {
+          "field_name": "drug_chembl_id",
+          "data_type": "string",
+          "description": "ChEMBL compound identifier derived or cross-referenced to Open Targets drug_id for integration with bronze_drug_target."
+        },
+        {
+          "field_name": "drug_opentargets_id",
+          "data_type": "string",
+          "description": "Open Targets drug identifier used in bronze_drug_target for additional cross-referencing."
+        },
+        {
+          "field_name": "transcriptomic_drug_id",
+          "data_type": "string",
+          "description": "Drug identifier used in transcriptomic datasets, e.g., PubChem CID or ChEMBL ID mapping to bronze_drug_transcriptomic_signatures."
+        }
+      ],
+      "primary_keys": [
+        "drug_inchikey"
+      ],
+      "rationale": "The integration table is the cornerstone for multi-dimensional drug similarity analysis. The InChIKey is selected as the primary key for its precise chemical specificity and wide adoption. Complementary identifiers such as PubChem CID, ChEMBL ID, and Open Targets drug ID support robust linkage across source datasets and accommodate differences in drug identifier usage between data types. This design enables joins, lookup, and aggregation of structural, network, and transcriptomic raw features, preserving source raw fidelity while enabling consistent integrated queries for downstream DSS computations."
+    }
+  ],
+  "join_keys": {
+    "bronze_drug_structures_pubchem": {
+      "primary_key": "inchi_key",
+      "alternate_keys": [
+        "pubchem_cid"
+      ]
+    },
+    "bronze_drug_target": {
+      "primary_key": "drug_id"
+    },
+    "bronze_drug_transcriptomic_signatures": {
+      "primary_key": "drug_id"
+    },
+    "bronze_drug_integration": {
+      "primary_key": "drug_inchikey",
+      "foreign_keys": {
+        "pubchem_cid": "bronze_drug_structures_pubchem.pubchem_cid",
+        "drug_chembl_id": "bronze_drug_target.drug_id",
+        "drug_opentargets_id": "bronze_drug_target.drug_id",
+        "transcriptomic_drug_id": "bronze_drug_transcriptomic_signatures.drug_id"
+      }
+    }
+  },
+  "explanations": {
+    "bronze_drug_structures_pubchem": "Captures raw drug chemical structure data from PubChem including canonical SMILES, InChI, and InChIKey identifiers, with fingerprint encoding fields essential for structure-based similarity computations.",
+    "bronze_drug_target": "Contains raw drug-target association data from Open Targets with standardized drug and target identifiers, confidence scores, and evidence annotation, enabling network similarity metrics based on drug-target overlap.",
+    "bronze_drug_transcriptomic_signatures": "Holds raw transcriptomic signatures representing drug perturbation and disease gene expression profiles, standardized by gene and drug/disease identifiers to facilitate transcriptomic similarity analysis.",
+    "bronze_drug_integration": "Serves as the master linkage table unifying all drug-related bronze datasets via core chemical and database identifiers, supporting integrated multi-modal drug similarity computations.",
+    "join_keys": "Defines the primary and foreign key relationships between tables enabling relational joins. The InChIKey is the central chemical identifier for integration, while PubChem CID, ChEMBL ID, and Open Targets drug IDs provide alternate and cross-source linkage ensuring maximal coverage and consistency."
+  }
+}

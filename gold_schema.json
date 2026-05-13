@@ -1,0 +1,38 @@
+```json
+{
+  "silver_to_gold_workflow": [
+    {
+      "modality": "structure",
+      "silver_tables_used": "silver_structural_similarity_matrix",
+      "table_definition_summary": "Square drug-by-drug matrix containing pairwise Tanimoto similarity scores computed from standardized molecular fingerprints (e.g., ECFP4) originating from canonical structural representations.",
+      "metric_rationale": "Tanimoto coefficient is the gold standard for molecular fingerprint similarity, capturing chemical feature overlap efficiently and interpretable for structure-based drug similarity.",
+      "integration_strategy": "Normalize similarity scores to [0,1]; integrate with other modalities using weighted similarity network fusion or ensemble averaging keyed by unified drug identifiers (e.g., InChIKey).",
+      "gold_layer_outputs": "gold_structural_similarity_matrix; gold_multimodal_similarity_matrix"
+    },
+    {
+      "modality": "network",
+      "silver_tables_used": "silver_network_similarity_matrix",
+      "table_definition_summary": "Drug-by-drug similarity matrix constructed from Jaccard indices on binary drug-target sets and weighted cosine similarity from association scores reflecting drug-target interaction evidence.",
+      "metric_rationale": "Jaccard similarity robustly quantifies shared biological targets reflecting functional relatedness; weighted cosine similarity refines this by incorporating evidence confidence.",
+      "integration_strategy": "Normalize and scale similarity scores to harmonize distributions; combine with other modality similarities using similarity network fusion leveraging common drug identifiers.",
+      "gold_layer_outputs": "gold_network_similarity_matrix; gold_multimodal_similarity_matrix"
+    },
+    {
+      "modality": "transcriptomics",
+      "silver_tables_used": "silver_transcriptomic_similarity_matrix",
+      "table_definition_summary": "Drug-by-drug similarity matrix derived from Pearson correlation or cosine similarity of normalized transcriptomic perturbation profiles, reflecting mechanistic response similarity.",
+      "metric_rationale": "Correlation metrics effectively capture shared expression profile patterns, providing complementary insight to structure and network modalities.",
+      "integration_strategy": "Normalize similarity values and optionally reduce dimensionality or apply noise filtering; integrate via linear or kernel-based fusion methods with other similarity modalities.",
+      "gold_layer_outputs": "gold_transcriptomic_similarity_matrix; gold_multimodal_similarity_matrix"
+    },
+    {
+      "modality": "integration",
+      "silver_tables_used": "silver_structural_similarity_matrix, silver_network_similarity_matrix, silver_transcriptomic_similarity_matrix",
+      "table_definition_summary": "Unified multi-modal similarity matrix synthesizing structural, network, and transcriptomic similarity matrices keyed on shared drug identifiers (e.g., InChIKey).",
+      "metric_rationale": "Combined multi-modal similarity enhances predictive power by integrating orthogonal evidence sources; fusion methods preserve modality-specific strengths while mitigating noise.",
+      "integration_strategy": "Employ similarity network fusion (SNF), weighted averaging, or machine learning ensemble approaches to merge modality-specific similarity matrices into a single integrated similarity matrix.",
+      "gold_layer_outputs": "gold_multimodal_similarity_matrix"
+    }
+  ]
+}
+```

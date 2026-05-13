@@ -1,0 +1,33 @@
+```json
+{
+  "bronze_to_silver_workflow": [
+    {
+      "modality": "structure",
+      "bronze_tables_used": "bronze_drug_structures_pubchem",
+      "transformation_logic": "Decode fingerprint_raw from hex or bitstring to binary vector format; map compounds via pubchem_cid and inchi_key; validate fingerprint_type consistency; prepare fingerprints for similarity computation.",
+      "normalization_steps": "Normalize fingerprint vectors to fixed length (e.g., 1024 bits); standardize fingerprint encoding and bit ordering; ensure uniform fingerprint type (prefer ECFP4).",
+      "filtering_thresholds": "Exclude entries with missing or invalid fingerprints; remove fingerprints shorter than a minimum bit length (e.g., <1024 bits); discard rare or unsupported fingerprint types.",
+      "similarity_metric": "Tanimoto coefficient (Jaccard similarity for bit vectors) calculated pairwise across drug fingerprints to form similarity matrix.",
+      "resulting_silver_tables": "silver_structural_similarity_matrix"
+    },
+    {
+      "modality": "network",
+      "bronze_tables_used": "bronze_drug_target",
+      "transformation_logic": "Aggregate drug-target pairs by drug_id; build drug-to-target incidence matrices weighted by association_score; encode evidence_type as categorical weights; resolve duplicate associations by selecting maximum weights.",
+      "normalization_steps": "Scale association_score to [0,1] per drug; unify evidence_type into confidence weightings; remove redundant entries preserving highest weighted score.",
+      "filtering_thresholds": "Filter out interactions with association_score < 0.5 or evidence_type of low confidence (e.g., inferred only); remove drugs with fewer than 3 targets after filtering.",
+      "similarity_metric": "Jaccard similarity on binary drug-target association sets and weighted cosine similarity on association score vectors.",
+      "resulting_silver_tables": "silver_network_similarity_matrix"
+    },
+    {
+      "modality": "transcriptomics",
+      "bronze_tables_used": "bronze_drug_transcriptomic_signatures",
+      "transformation_logic": "Transform log_fold_change values into a drug-by-gene expression matrix; separate or tag by signature_type (drug perturbation vs disease); filter using p_value significance thresholds.",
+      "normalization_steps": "Apply per-gene z-score normalization across all drugs; impute missing gene values with zeros or medians; remove low variance genes; optionally weight by -log10(p_value).",
+      "filtering_thresholds": "Discard genes with variance below 0.01; remove drug/disease signatures with fewer than 50 significant genes (p_value < 0.05); exclude incomplete gene coverage.",
+      "similarity_metric": "Pearson correlation or cosine similarity between normalized drug expression profiles to generate similarity matrix.",
+      "resulting_silver_tables": "silver_transcriptomic_similarity_matrix"
+    }
+  ]
+}
+```
